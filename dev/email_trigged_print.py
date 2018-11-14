@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2018   Simone Rossi <simone.rossi@eurecom.fr>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import time
 from itertools import chain
 import email
@@ -43,16 +57,6 @@ def search_string(uid_max, criteria):
     # Produce search string in IMAP format:
     #   e.g. (FROM "me@gmail.com" SUBJECT "abcde" BODY "123456789" UID 9999:*)
 
-
-def get_first_text_block(msg):
-    type = msg.get_content_maintype()
-
-    if type == 'multipart':
-        for part in msg.get_payload():
-            if part.get_content_maintype() == 'text':
-                return part.get_payload()
-    elif type == 'text':
-        return msg.get_payload()
 
 
 def get_payloads(msg, list_of_payloads):
