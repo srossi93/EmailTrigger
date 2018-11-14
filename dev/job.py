@@ -4,13 +4,17 @@ from itertools import chain
 import email
 import imaplib
 import logging
+import logging.handlers
 import sys
 
 from secret import password, username, imap_ssl_host, imap_ssl_port
 
-
 stdout_handler = logging.StreamHandler(sys.stdout)
-handlers = [stdout_handler]
+rotating_handler = logging.handlers.TimedRotatingFileHandler('./log/event-trigger.log',
+                                                             when="h",
+                                                             interval=1,
+                                                             backupCount=5)
+handlers = [stdout_handler, rotating_handler]
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -72,9 +76,6 @@ def process_new_email(uids, server):
 
         delete_attachments(filenames)
 
-
-
-
 def save_attachments(attachments):
     filenames = []
     for i, attach in enumerate(attachments):
@@ -89,8 +90,8 @@ def process_attachments(filenames):
     import subprocess
     for filename in filenames:
         logger.info('Processing file %s' % filename)
-        command = ('echo lp -d tinee -o sides=two-sided-long-edge %s' % filename).split(' ')
-        subprocess.Popen(command, stdin=subprocess.PIPE)
+        command = ('lp -d tinee -o sides=two-sided-long-edge %s' % filename).split(' ')
+        subprocess.Popen(command, stdout=None)
 
     while subprocess.run(['lpstat'], stdout=subprocess.PIPE,).stdout.decode('utf-8') != '':
         logger.info('Waiting for job to complete')
@@ -107,7 +108,7 @@ def main():
     uid_max = 0
     server = imaplib.IMAP4_SSL(imap_ssl_host, imap_ssl_port)
     server.login(username, password)
-    logger.info('Server status: %s' % server.state)
+    logger.debug('Server status: %s' % server.state)
     server.select('INBOX')
 
     _, data = server.uid('search', None, search_string(uid_max, criteria))
@@ -118,7 +119,7 @@ def main():
         # Initialize `uid_max`. Any UID less than or equal to `uid_max` will be ignored subsequently.
 
     server.logout()
-    logger.info('Server status: %s' % server.state)
+    logger.debug('Server status: %s' % server.state)
 
     # Keep checking messages ...
     try:
@@ -142,7 +143,7 @@ def main():
                 uid_max = max(uids)
 
             server.logout()
-            logger.info('Server status: %s' % server.state)
+            logger.debug('Server status: %s' % server.state)
             time.sleep(5)
 
     except KeyboardInterrupt:
