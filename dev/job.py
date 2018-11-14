@@ -6,8 +6,12 @@ import imaplib
 import logging
 import logging.handlers
 import sys
+import os
+
 
 from secret import password, username, imap_ssl_host, imap_ssl_port
+from daemon import Daemon
+
 
 stdout_handler = logging.StreamHandler(sys.stdout)
 rotating_handler = logging.handlers.TimedRotatingFileHandler('./log/event-trigger.log',
@@ -21,7 +25,7 @@ logging.basicConfig(
     format='[%(asctime)s %(levelname)s] %(message)s',
     handlers=handlers)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 # Restrict mail search. Be very specific.
 # Machine should be very selective to receive messages.
@@ -104,7 +108,7 @@ def delete_attachments(filenames):
         os.remove(filename)
 
 
-def main():
+def job():
     uid_max = 0
     server = imaplib.IMAP4_SSL(imap_ssl_host, imap_ssl_port)
     server.login(username, password)
@@ -152,6 +156,33 @@ def main():
             server.logout()
 
 
+class EventDaemon(Daemon):
+    def __init__(self, pidfile, stdin=os.devnull,
+                 stdout=os.devnull, stderr=os.devnull,
+                 home_dir='.', umask=0o22, verbose=1,
+                 use_gevent=False, use_eventlet=False):
+        super(EventDaemon, self).__init__(pidfile, stdin, stdout,
+                                          stderr, home_dir, umask,
+                                          verbose, use_gevent, use_eventlet)
+
+    def run(self):
+        job()
 
 if __name__ == '__main__':
-    main()
+    event_daemon = EventDaemon('./daemon.pid')
+    if len(sys.argv) == 1:
+        logger.critical('Please, specify an action. Available: start|stop|restart')
+        sys.exit()
+
+    if sys.argv[1] == 'start':
+        event_daemon.start()
+        sys.exit()
+    if sys.argv[1] == 'stop':
+        event_daemon.stop()
+        sys.exit()
+    if sys.argv[1] == 'restart':
+        event_daemon.restart()
+        sys.exit()
+
+    logger.fatal('Unknown action. Available: start|stop|restart')
+
