@@ -40,7 +40,7 @@ class EmailTrigger(object):
         self.imap_ssl_host = imap_ssl_host
         self.imap_ssl_port = imap_ssl_port
         self.filter_criteria = filter_criteria
-        self.delete_attachments_local = True
+        self.delete_attachments_local = False
 
         self._server = imaplib.IMAP4_SSL(self.imap_ssl_host, self.imap_ssl_port)
         self._logger = logging.getLogger(__name__)
@@ -125,6 +125,7 @@ class EmailTrigger(object):
             command = ('lp -d tinee -o sides=two-sided-long-edge %s' % filename).split(' ')
             subprocess.Popen(command, stdout=None)
 
+        time.sleep(1)
         while subprocess.run(['lpstat'], stdout=subprocess.PIPE,).stdout.decode('utf-8') != '':
             self._logger.info('Waiting for job to complete')
             time.sleep(1.5)
