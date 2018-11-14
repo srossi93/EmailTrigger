@@ -241,13 +241,13 @@ class Daemon(object):
         pid = self.get_pid()
 
         if pid is None:
-            self.log('Process is stopped')
+            self.log('Daemon is stopped')
             return False
         elif os.path.exists('/proc/%d' % pid):
-            self.log('Process (pid %d) is running...' % pid)
+            self.log('Daemon is running with pid %d' % pid)
             return True
         else:
-            self.log('Process (pid %d) is killed' % pid)
+            self.log('Daemon with pid %d is killed' % pid)
             return False
 
     def run(self):
