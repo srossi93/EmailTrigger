@@ -15,7 +15,7 @@ This script simply spawns a daemon that will continuously check your email inbox
 new document to print. 
 
 ## Configuration
-Before running the daemon you will need to create a configuration file under `./dev/secrets.py`.
+Before running the daemon you will need to create a configuration file under `./dev/secret.py`.
 It has to define a couple of variables, as follows
 
 ```python 
