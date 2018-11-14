@@ -1,25 +1,33 @@
-'''
-***
-Modified generic daemon class
-***
 
-Author:         http://www.jejik.com/articles/2007/02/
-                        a_simple_unix_linux_daemon_in_python/www.boxedice.com
 
-License:        http://creativecommons.org/licenses/by-sa/3.0/
-
-Changes:        23rd Jan 2009 (David Mytton <david@boxedice.com>)
-                - Replaced hard coded '/dev/null in __init__ with os.devnull
-                - Added OS check to conditionally remove code that doesn't
-                  work on OS X
-                - Added output to console on completion
-                - Tidied up formatting
-                11th Mar 2009 (David Mytton <david@boxedice.com>)
-                - Fixed problem with daemon exiting on Python 2.4
-                  (before SystemExit was part of the Exception base)
-                13th Aug 2010 (David Mytton <david@boxedice.com>
-                - Fixed unhandled exception if PID file is empty
-'''
+# Copyright (C) 2018   Simone Rossi <simone.rossi@eurecom.fr>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# Author:         http://www.jejik.com/articles/2007/02/
+#                        a_simple_unix_linux_daemon_in_python/www.boxedice.com
+#
+#Changes:        23rd Jan 2009 (David Mytton <david@boxedice.com>)
+#                - Replaced hard coded '/dev/null in __init__ with os.devnull
+#                - Added OS check to conditionally remove code that doesn't
+#                  work on OS X
+#                - Added output to console on completion
+#                - Tidied up formatting
+#                11th Mar 2009 (David Mytton <david@boxedice.com>)
+#                - Fixed problem with daemon exiting on Python 2.4
+#                  (before SystemExit was part of the Exception base)
+#                13th Aug 2010 (David Mytton <david@boxedice.com>
+#                - Fixed unhandled exception if PID file is empty
 
 # Core modules
 from __future__ import print_function
@@ -72,7 +80,7 @@ class Daemon(object):
                 # Exit first parent
                 sys.exit(0)
         except OSError as e:
-            sys.stderr.write(
+            self._logger.critical(
                 "fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
 
@@ -88,7 +96,7 @@ class Daemon(object):
                 # Exit from second parent
                 sys.exit(0)
         except OSError as e:
-            sys.stderr.write(
+            self._logger.critical(
                 "fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
 
@@ -123,13 +131,14 @@ class Daemon(object):
             signal.signal(signal.SIGTERM, sigtermhandler)
             signal.signal(signal.SIGINT, sigtermhandler)
 
-        self.log("Started")
+        self.log("Started with PID %d" % pid)
 
         # Write pidfile
         atexit.register(
             self.delpid)  # Make sure pid file is removed if we quit
         pid = str(os.getpid())
         open(self.pidfile, 'w+').write("%s\n" % pid)
+        print('write done')
 
     def delpid(self):
         try:
@@ -162,7 +171,7 @@ class Daemon(object):
 
         if pid:
             message = "pidfile %s already exists. Is it already running?\n"
-            sys.stderr.write(message % self.pidfile)
+            self.log(message % self.pidfile)
             sys.exit(1)
 
         # Start the daemon
