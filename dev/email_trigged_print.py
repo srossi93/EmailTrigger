@@ -170,7 +170,8 @@ class EventDaemon(Daemon):
         job()
 
 if __name__ == '__main__':
-    event_daemon = EventDaemon('~/.email_trigged_print-daemon.pidfile')
+    pidfile_path = '~/.etp-daemon.pidfile'
+    event_daemon = EventDaemon(os.path.expanduser(pidfile_path))
     if len(sys.argv) == 1:
         logger.critical('Please, specify an action. Available: start|stop|restart')
         sys.exit()
