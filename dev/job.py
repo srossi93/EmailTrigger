@@ -93,8 +93,8 @@ def process_attachments(filenames):
         subprocess.Popen(command, stdin=subprocess.PIPE)
 
     while subprocess.run(['lpstat'], stdout=subprocess.PIPE,).stdout.decode('utf-8') != '':
-        logger.info('Waiting for command to complete')
-        time.sleep(1)
+        logger.info('Waiting for job to complete')
+        time.sleep(1.5)
 
 def delete_attachments(filenames):
     import os
