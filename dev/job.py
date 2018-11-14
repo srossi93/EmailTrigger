@@ -89,8 +89,12 @@ def process_attachments(filenames):
     import subprocess
     for filename in filenames:
         logger.info('Processing file %s' % filename)
-        lpr = subprocess.Popen(["/bin/echo", filename], stdin=subprocess.PIPE)
+        command = ('echo lp -d tinee -o sides=two-sided-long-edge %s' % filename).split(' ')
+        subprocess.Popen(command, stdin=subprocess.PIPE)
 
+    while subprocess.run(['lpstat'], stdout=subprocess.PIPE,).stdout.decode('utf-8') != '':
+        logger.info('Waiting for command to complete')
+        time.sleep(1)
 
 def delete_attachments(filenames):
     import os
