@@ -49,7 +49,7 @@ To stop the daemon:
 [2018-11-14 16:32:32,151 INFO] Daemon with pid 2723 is stopped
 ```
 
-To restart the daemon (it will stop and than start again):
+To restart the daemon (it will stop and then start again):
 ```bash
 > python3 dev/event_daemon.py restart
 [2018-11-14 16:32:32,013 INFO] Stopping...
