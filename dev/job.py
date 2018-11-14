@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Machine should be very selective to receive messages.
 criteria = {
     'FROM':    'rossi@eurecom.fr',
-#    'SUBJECT': 'SPECIAL SUBJECT LINE',
+    'SUBJECT': 'print',
 #    'BODY':    'SECRET SIGNATURE',
 }
 
