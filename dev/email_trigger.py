@@ -34,13 +34,15 @@ def search_string(uid_max, criteria):
 
 
 class EmailTrigger(object):
-    def __init__(self, username, password, imap_ssl_host, imap_ssl_port, filter_criteria):
+    def __init__(self, username, password, imap_ssl_host, imap_ssl_port, filter_criteria, printer_name):
         self.username = username
         self.password = password
         self.imap_ssl_host = imap_ssl_host
         self.imap_ssl_port = imap_ssl_port
         self.filter_criteria = filter_criteria
         self.delete_attachments_local = False
+
+        self.printer_name = printer_name
 
         self._server = imaplib.IMAP4_SSL(self.imap_ssl_host, self.imap_ssl_port)
         self._logger = logging.getLogger(__name__)
@@ -122,7 +124,7 @@ class EmailTrigger(object):
     def _process_attachments(self, filenames):
         for filename in filenames:
             self._logger.info('Processing file %s' % filename)
-            command = ('lp -d tinee -o sides=two-sided-long-edge %s' % filename).split(' ')
+            command = ('lp -d %s -o sides=two-sided-long-edge %s' % (self.printer_name, filename)).split(' ')
             subprocess.Popen(command, stdout=None)
 
         time.sleep(1)

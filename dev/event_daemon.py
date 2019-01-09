@@ -27,12 +27,13 @@ class EventDaemon(Daemon):
     def __init__(self, pidfile, stdin=os.devnull,
                  stdout=os.devnull, stderr=os.devnull,
                  home_dir='.', umask=0o22, verbose=1,
-                 use_gevent=False, use_eventlet=False):
+                 use_gevent=False, use_eventlet=False, printer_name='tinee'):
         super(EventDaemon, self).__init__(pidfile, stdin, stdout,
                                           stderr, home_dir, umask,
                                           verbose, use_gevent, use_eventlet)
 
-        self.email_trigger = EmailTrigger(username, password, imap_ssl_host, imap_ssl_port, filter_criteria)
+        self.email_trigger = EmailTrigger(username, password, imap_ssl_host, imap_ssl_port,
+                                          filter_criteria[printer_name], printer_name)
 
     def run(self):
         while(1):
@@ -41,11 +42,17 @@ class EventDaemon(Daemon):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print('Please, specify an action and a printer. Available: start|stop|restart|info printer_name')
+        sys.exit()
+
+    printer_name = sys.argv[2]
+
     stdout_handler = logging.StreamHandler(sys.stdout)
-    rotating_handler = logging.handlers.TimedRotatingFileHandler('./log/event-trigger.log',
-                                                             when="h",
-                                                             interval=1,
-                                                             backupCount=5)
+    rotating_handler = logging.handlers.TimedRotatingFileHandler('./log/event-trigger-%s.log' % printer_name,
+                                                                 when="h",
+                                                                 interval=1,
+                                                                 backupCount=5)
     handlers = [stdout_handler, rotating_handler]
 
     logging.basicConfig(
@@ -54,14 +61,10 @@ if __name__ == '__main__':
         handlers=handlers)
     logger = logging.getLogger()
 
-    pidfile_path = '~/.etp-daemon.pidfile'
+    pidfile_path = '~/.etp-daemon-%s.pidfile' % printer_name
     event_daemon = EventDaemon(os.path.expanduser(pidfile_path))
 
     #   event_daemon.run()
-
-    if len(sys.argv) == 1:
-        logger.critical('Please, specify an action. Available: start|stop|restart|info')
-        sys.exit()
 
     if sys.argv[1] == 'start':
         event_daemon.start()
